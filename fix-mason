@@ -1,0 +1,39 @@
+#!/bin/bash
+PACKAGE_NAME=$1
+if [ -z "$1" ]; then
+  echo "Usage: ./fix-mason.sh <package-name>"
+  exit 1
+fi
+
+PACKAGE_PATH=$(which "$PACKAGE_NAME")
+if [ -z "$PACKAGE_PATH" ]; then
+  echo "$PACKAGE_NAME not installed."
+  exit 1
+fi
+
+MASON_PATH=~/.local/share/nvim/mason/packages/"$PACKAGE_NAME"/libexec
+if mkdir -p "$MASON_PATH"; then
+  echo "Directories created at $MASON_PATH."
+else
+  echo "Failed to create directories."
+  exit 1
+fi
+
+if ln -sf "$PACKAGE_PATH" "$MASON_PATH"/"$PACKAGE_NAME"; then
+  echo "Symbolic link created successully."
+else
+  echo "Failed to create symbolic links."
+  exit 1
+fi
+
+WRAPPER_SCRIPT=~/.local/share/nvim/mason/packages/"$PACKAGE_NAME"/"$PACKAGE_NAME"
+cat << EOF > "$WRAPPER_SCRIPT"
+#!/bin/bash
+exec ~/.local/share/nvim/mason/packages/"$PACKAGE_NAME"/libexec/"$PACKAGE_NAME" "\$@"
+EOF
+if chmod +x "$WRAPPER_SCRIPT"; then
+  echo "Wrapper script created and made executable."
+else
+  echo "Failed to create or make script executable."
+  exit 1
+fi
