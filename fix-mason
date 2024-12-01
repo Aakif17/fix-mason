@@ -5,7 +5,7 @@ if [ -z "$1" ]; then
   exit 1
 fi
 
-PACKAGE_PATH=$(which "$PACKAGE_NAME")
+PACKAGE_PATH=$(which "$PACKAGE_NAME" > /dev/null 2>&1)
 if [ -z "$PACKAGE_PATH" ]; then
   echo "$PACKAGE_NAME not installed."
   exit 1
